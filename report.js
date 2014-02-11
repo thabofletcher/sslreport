@@ -1,49 +1,60 @@
 var mrequest = require('request')
 var http = require('http')
 var random_ua = require('random-ua')
+var uuid = require('uuid');
 var url = require('url')
 
 var firebase = require('firebase')
-
-var firebasepath = {
-    base_path: "https://sslreport.firebaseio.com/",
-    auth: "mwIybs5UQeywYYSopO1i67Lq3MMWLUnfQkrf0ATa"
-}
+var fb = new firebase("https://sslreport.firebaseio.com/")
+fb.auth("mwIybs5UQeywYYSopO1i67Lq3MMWLUnfQkrf0ATa")
 
 exports.post = function (request, response) {
+	setTimeout(getreport, 0)
 	response.writeHead(200)
 	response.end()
 }
 
-var twerkit = function  (request, response) {
+var getreport = function () {
+	var results = {
+		id: uuid.v1(),
+		date: (new Date()).toString(),
+		counts: {
+			ok: 0,
+			error: 0,
+			http: 0,
+			https: 0		
+		},
+		responses: []
+	}
+
+	fb.child(results.id).set(results)
+
 	var ua = random_ua.generate()
 	var count = 0
 
 	var totalHttps = 0
 	var totalHttp = 0
 
-	var respond = function(obj) {
-		obj.http = totalHttp
-		obj.https = totalHttps
-		count++
-		obj.count = count
-
-		response.write(JSON.stringify(obj, null, "\t") + ',\n')
-
-		// should have a response for every line except the headers
-		if (count == 500) {
-			end()
-		}
+	var append = function(obj) {
+		results.responses.push(obj)
+		fb.child(results.id).set(results)
 	}
 
-	var start = function() {
-		response.setHeader("Content-Type", "application/json")
-		response.writeHead(200)
-		response.write("[")
+	var addhttps = function(obj) {
+		results.counts.ok++
+		results.counts.https++
+		append(obj)
 	}
-	var end = function() { 
-		response.write("]")
-		response.end() 
+
+	var addhttp = function(obj) {
+		results.counts.ok++
+		results.counts.http++
+		append(obj)
+	}
+
+	var adderror = function(obj) {
+		results.counts.error++
+		append(obj)
 	}
 
 	var query = function(uri, orig) {
@@ -61,20 +72,18 @@ var twerkit = function  (request, response) {
 					query(newuri, orig)
 				}
 				else
-					respond({orig: orig, uri: uri, error: error})
+					adderror({orig: orig, uri: uri, error: error})
 			}
 			else if (response) {
 
 				if (response.statusCode == 200) {
-					totalHttp++
-					respond({orig: orig, uri: uri, status: response.statusCode})
+					addhttp({orig: orig, uri: uri, status: response.statusCode})
 				}
 				else if (response.statusCode > 300 && response.statusCode < 400) {
 					if (!response.headers.location)
-						respond({orig: orig, uri: uri, code: response.statusCode, target: null})
+						adderror({orig: orig, uri: uri, code: response.statusCode, target: null})
 					else if (response.headers.location.indexOf('https') != -1) {
-						totalHttps++
-						respond({orig: orig, uri: uri, code: response.statusCode, target: response.headers.location})
+						addhttps({orig: orig, uri: uri, code: response.statusCode, target: response.headers.location})
 					}
 					else {
 						if (url.parse(response.headers.location).hostname)
@@ -85,10 +94,10 @@ var twerkit = function  (request, response) {
 						
 				}
 				else 
-					respond({orig: orig, uri: uri, code: response.statusCode})
+					adderror({orig: orig, uri: uri, code: response.statusCode})
 			}
 			else {
-				respond({orig: orig, uri: uri, wtf: response})
+				adderror({orig: orig, uri: uri, wtf: response})
 			}
 		})		
 	}
@@ -97,8 +106,6 @@ var twerkit = function  (request, response) {
 		mrequest('http://moz.com/top500/domains/csv', function (error, response, body) {
 			if (!error && response.statusCode == 200) {
 				var lines = body.split('\n')
-				count = 0;
-				start()
 				lines.forEach(function(line) {
 					var fields = line.split(',')
 					// headers dont have an index as the first field
@@ -110,9 +117,8 @@ var twerkit = function  (request, response) {
 
 			}
 			else {
-				start()
-				respond({error: error, response: response})
-				end()
+				results.catastrophic = {error: error, response: response}
+				fb.child(results.id).set(results)
 			}
 		})	
 	}()
