@@ -55,22 +55,29 @@ var getQ = function(counts) {
 	return parseFloat((counts.ok + counts.error) / 5).toPrecision(4) + '%'
 }
 
+var data = []
+//var reload = false;
+
 var loadchart = function() {
-	var data = []
-	var fb = new Firebase('https://sslreport.firebaseio.com/' + location.hash.substr(1));
-
-	fb.once('value', function(childFb) {
+	var fb = new Firebase('https://sslreport.firebaseio.com/' + location.hash.substr(1) + "/counts");
+	fb.on('value', function(childFb) {
 		var child = childFb.val()
+		if (child) {
+			data = []
+			data.push({value: child.https, color:"blue"})
+			data.push({value: child.http, color:"green"})
+			data.push({value: child.error, color:"#F7464A"})
+			data.push({value: 500 - (child.ok + child.error), color:"#4D5360"})
 
-		data.push({value: child.counts.https, color:"blue"})
-		data.push({value: child.counts.http, color:"green"})
-		data.push({value: child.counts.error, color:"#F7464A"})
-		data.push({value: 500 - (child.counts.ok + child.counts.error), color:"#4D5360"})
-
-		document.getElementById('chartholder').innerHTML = '<canvas id="chart" width="400" height="400"></canvas>'
-		var ctx = document.getElementById('chart').getContext('2d');
-		var chart = new Chart(ctx).Doughnut(data);
+			refreshchart()	
+		}
 	})
+}
+
+var refreshchart = function() {
+	document.getElementById('chartholder').innerHTML = '<canvas id="chart" width="400" height="400"></canvas>'
+	var ctx = document.getElementById('chart').getContext('2d');
+	var chart = new Chart(ctx).Doughnut(data, {animation:false});
 }
 
 window.addEventListener('hashchange', loadchart, false)
