@@ -44,6 +44,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	if (location.hash)
 		loadchart()
+	else
+		document.getElementById('charttop').style.display = "none"
 })
 
 var getMITM = function(counts) {
@@ -64,10 +66,10 @@ var loadchart = function() {
 		var child = childFb.val()
 		if (child) {
 			data = []
-			data.push({value: child.https, color:"blue"})
-			data.push({value: child.http, color:"green"})
-			data.push({value: child.error, color:"#F7464A"})
-			data.push({value: 500 - (child.ok + child.error), color:"#4D5360"})
+			data.push({value: child.https, color:"#029acf"})
+			data.push({value: child.http, color:"#469408"})
+			data.push({value: child.error, color:"#d9230f"})
+			data.push({value: 500 - (child.ok + child.error), color:"#474949"})
 
 			refreshchart()	
 		}
@@ -78,6 +80,7 @@ var refreshchart = function() {
 	document.getElementById('chartholder').innerHTML = '<canvas id="chart" width="400" height="400"></canvas>'
 	var ctx = document.getElementById('chart').getContext('2d');
 	var chart = new Chart(ctx).Doughnut(data, {animation:false});
+	document.getElementById('charttop').style.display = "block"
 }
 
 window.addEventListener('hashchange', loadchart, false)

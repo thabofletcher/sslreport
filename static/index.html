@@ -16,9 +16,15 @@
     <!-- Main jumbotron for a primary marketing message or call to action -->
     <div class="jumbotron">
 		<div class="container">
-            <div style="text-align: center">
+            <div id="charttop" style="text-align: center; display:none">
                 <h2>SSL Report</h2>
                 <div id="chartholder"></div>
+                <div>
+                  <span class="label label-default">Unqueried</span>
+                  <span class="label label-primary">Error</span>
+                  <span class="label label-success">Http</span>
+                  <span class="label label-info">Https</span>
+                </div>
 			</div>
             <br/><br/>
 			<p><button id="gobutton" type="button" class="btn btn-default btn-lg btn-block">query the number of top 500 sites on https!</button></p>
