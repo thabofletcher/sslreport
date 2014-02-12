@@ -9,9 +9,10 @@ var fb = new firebase("https://sslreport.firebaseio.com/")
 fb.auth("mwIybs5UQeywYYSopO1i67Lq3MMWLUnfQkrf0ATa")
 
 exports.post = function (request, response) {
+	var now = new Date()
 	var results = {
-		id: uuid.v1(),
-		date: (new Date()).toString(),
+		id: now.getTime() + '-' + uuid.v1(),
+		date: now.toString(),
 		counts: {
 			ok: 0,
 			error: 0,

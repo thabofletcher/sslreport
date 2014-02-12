@@ -27,8 +27,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		// </tr>
 		var child = childFb.val()
 		var table = document.getElementById("allresults");
+		var row = table.insertRow(1);
 
-		table.innerHTML += 
+		row.innerHTML = 
 		'<th>' + child.date + '</th>' + 
 		'<th><a href=#' + child.id + '>' + child.id + '</a></th>' + 
 		'<th id="' + child.id + 'MITM">' + getMITM(child.counts) + '</th>' + 
