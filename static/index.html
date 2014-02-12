@@ -20,31 +20,30 @@
     <!-- Main jumbotron for a primary marketing message or call to action -->
     <div class="jumbotron">
 		<div class="container">
-			<p>Click below to get a new report, or on the table below to view an old one.</p>
-			<p><button id="gobutton" type="button" class="btn btn-default btn-lg btn-block">Show me the number of sites on https!</button></p>
+            <div style="text-align: center">
+                <h2>SSL Report</h2>
+                <div id="chartholder"></div>
+			</div>
+            <br/><br/>
+			<p><button id="gobutton" type="button" class="btn btn-default btn-lg btn-block">requery the number of top 500 sites on https!</button></p>
 		</div>
     </div>
 
     <div class="container">
-		<table class="table table-striped table-hover ">
+		<table id="allresults" class="table table-striped table-hover ">
             <tr>
               <th>Report Time</th>
               <th>Report ID</th>
-            </tr>
-            <tr>
-              <td>1/3/1024 5:33PM</td>
-              <td>Column content</td>
-            </tr>
-            <tr>
-              <td>21/3/1024 5:33PM</td>
-              <td>Column content</td>
+              <th>Percent Vulnerable to MITM</th>
             </tr>
         </table>
 
 		<footer>
 			<p>&copy; Front Porch 2013</p>
 		</footer>
-    </div> 
-    <script src="main.js"></script>
+    </div>
+    <script type='text/javascript' src='https://cdn.firebase.com/js/client/1.0.3/firebase.js'></script>
+    <script type='text/javascript' src="Chart.min.js"></script>
+    <script type='text/javascript' src="main.js"></script>
     </body>
 </html>

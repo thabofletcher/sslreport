@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		request.onload = function() {
 		  if (request.status == 200)
-		    alert('twerking it!')
+		    location.hash = request.responseText
 		  else console.log("server unexpected response: " + request.status + ", " + request.responseText)
 		}
 
@@ -16,4 +16,76 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		request.send()
 	})
+
+	var fb = new Firebase('https://sslreport.firebaseio.com/');
+
+	fb.on('child_added', function(childFb) {
+		// <tr>
+		// <th>Report Time</th>
+		// <th>Report ID</th>
+		// <th>Percent Vulnerable to MITM</th>
+		// </tr>
+		var child = childFb.val()
+		var table = document.getElementById("allresults");
+
+		table.innerHTML += '<th>' + child.date + '</th>' + '<th><a href=#' + child.id + '>' + child.id + '</a></th>' + '<th id="' + child.id + '">' + child.counts.http / 5 + '</th>'
+	})
+
+	fb.on('child_changed', function(childFb) {
+		var child = childFb.val()
+		document.getElementById(child.id).innerHTML = child.counts.http / 5
+	})
+
+	if (location.hash)
+		loadchart()
 })
+
+
+
+var loadchart = function() {
+
+	var fb = new Firebase('https://sslreport.firebaseio.com/' + location.hash.substr(1));
+
+	// fb.on('child_added', function(childFb) {
+	// 	// <tr>
+	// 	// <th>Report Time</th>
+	// 	// <th>Report ID</th>
+	// 	// <th>Percent Vulnerable to MITM</th>
+	// 	// </tr>
+	// 	var child = childFb.val()
+	// 	var table = document.getElementById("allresults");
+
+	// 	if (location.hash != child.id)
+	// 		table.innerHTML += '<th>' + child.date + '</th>' + '<th><a href=#' + child.id + '>' + child.id + '</a></th>' + '<th>' + child.counts.http / 5 + '</th>'
+	// })
+	var dataUrl = location.hash.substr(1)
+
+	var data = [
+		{
+			value: 30,
+			color:"#F7464A"
+		},
+		{
+			value : 50,
+			color : "#E2EAE9"
+		},
+		{
+			value : 100,
+			color : "#D4CCC5"
+		},
+		{
+			value : 40,
+			color : "#949FB1"
+		},
+		{
+			value : 120,
+			color : "#4D5360"
+		}
+	]
+
+	document.getElementById('chartholder').innerHTML = '<canvas id="chart" width="400" height="400"></canvas>'
+	var ctx = document.getElementById('chart').getContext('2d');
+	var chart = new Chart(ctx).Doughnut(data);
+}
+
+window.addEventListener('hashchange', loadchart, false)

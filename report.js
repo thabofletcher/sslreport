@@ -9,12 +9,6 @@ var fb = new firebase("https://sslreport.firebaseio.com/")
 fb.auth("mwIybs5UQeywYYSopO1i67Lq3MMWLUnfQkrf0ATa")
 
 exports.post = function (request, response) {
-	setTimeout(getreport, 0)
-	response.writeHead(200)
-	response.end()
-}
-
-var getreport = function () {
 	var results = {
 		id: uuid.v1(),
 		date: (new Date()).toString(),
@@ -24,16 +18,15 @@ var getreport = function () {
 			http: 0,
 			https: 0		
 		},
+		useragent: random_ua.generate(),
 		responses: []
 	}
 
+	response.writeHead(200)
+	response.write(results.id)
+	response.end()
+
 	fb.child(results.id).set(results)
-
-	var ua = random_ua.generate()
-	var count = 0
-
-	var totalHttps = 0
-	var totalHttp = 0
 
 	var append = function(obj) {
 		results.responses.push(obj)
@@ -63,7 +56,7 @@ var getreport = function () {
 			uri: uri,
 			followRedirect: false, 
 			headers: {
-        		'User-Agent': ua
+        		'User-Agent': results.useragent
         	} 
         }, function (error, response, body) {
 			if (error) {
